@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CreateUserSchema } from './create-user.dto.js';
+import { CreateUserSchema } from './create-user.dto';
 import { createZodDto } from 'nestjs-zod';
 
 export const UpdateUserSchema = CreateUserSchema.partial();

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto.js';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
 //import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from '../../prisma.service.js';
+import { PrismaService } from '../../prisma.service';
 
 @Injectable()
 export class UserService {
@@ -18,7 +18,7 @@ export class UserService {
         },
       });
     } catch (error) {
-      throw new Error('Failed to create user', { cause: error });
+      throw new ConflictException('Email already in use', error);
     }
   }
 

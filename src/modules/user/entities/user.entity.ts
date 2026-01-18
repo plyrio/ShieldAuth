@@ -1,5 +1,5 @@
-import { EmailVo } from './email.vo.js';
-import { UserStatusEnum } from './user-status.enum.js';
+import { EmailVo } from './email.vo';
+import { UserStatusEnum } from './user-status.enum';
 
 type UserProps = {
   id?: number;

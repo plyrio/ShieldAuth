@@ -1,6 +1,6 @@
-import { User } from './user.entity.js';
-import { UserStatusEnum } from './user-status.enum.js';
-import { EmailVo } from './email.vo.js';
+import { User } from './user.entity';
+import { UserStatusEnum } from './user-status.enum';
+import { EmailVo } from './email.vo';
 
 describe('User Entity', () => {
   const makeUser = () =>
