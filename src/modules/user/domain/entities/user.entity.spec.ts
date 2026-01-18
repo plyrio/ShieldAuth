@@ -1,6 +1,6 @@
 import { User } from './user.entity';
-import { UserStatusEnum } from './user-status.enum';
-import { EmailVo } from './email.vo';
+import { UserStatusEnum } from '../enums/user-status.enum';
+import { EmailVo } from '../value-objects/email.vo';
 
 describe('User Entity', () => {
   const makeUser = () =>
@@ -8,7 +8,7 @@ describe('User Entity', () => {
       id: 1,
       name: 'Pedro',
       email: new EmailVo('pedro@email.com'),
-      passwordHash: 'hashed-password',
+      password: 'hashed-password',
       status: UserStatusEnum.ACTIVE,
     });
 

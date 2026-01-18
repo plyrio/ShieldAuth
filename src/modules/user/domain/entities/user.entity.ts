@@ -1,11 +1,11 @@
-import { EmailVo } from './email.vo';
-import { UserStatusEnum } from './user-status.enum';
+import { EmailVo } from '../value-objects/email.vo';
+import { UserStatusEnum } from '../enums/user-status.enum';
 
 type UserProps = {
   id?: number;
   name: string;
   email: EmailVo;
-  passwordHash: string;
+  password: string;
   status: UserStatusEnum;
   createdAt?: Date;
   updatedAt?: Date;
@@ -15,7 +15,7 @@ export class User {
   private id?: number;
   private name: string;
   private email: EmailVo;
-  private passwordHash: string;
+  private password: string;
   private status: UserStatusEnum;
   private createdAt: Date;
   private updatedAt?: Date;
@@ -24,7 +24,7 @@ export class User {
     this.id = props.id;
     this.name = props.name;
     this.email = props.email;
-    this.passwordHash = props.passwordHash;
+    this.password = props.password;
     this.status = UserStatusEnum.ACTIVE;
     this.createdAt = props.createdAt ?? new Date();
     this.updatedAt = props.updatedAt ?? this.createdAt;
@@ -54,11 +54,11 @@ export class User {
   }
 
   changePassword(newPassword: string) {
-    if (this.passwordHash === newPassword) {
+    if (this.password === newPassword) {
       throw new Error('New password must be different from current password');
     }
 
-    this.passwordHash = newPassword;
+    this.password = newPassword;
     this.updatedAt = new Date();
   }
 

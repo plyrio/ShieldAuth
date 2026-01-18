@@ -9,7 +9,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('ShieldAuth API')
     .setDescription(
-      'API de autenticação e gerenciamento de usuários, com registro, login, ativação de contas usando JWT.',
+      'Authentication and User Management API featuring user registration, login, account activation, and JWT-based authentication.',
     )
     .setVersion('1.0')
     .build();
