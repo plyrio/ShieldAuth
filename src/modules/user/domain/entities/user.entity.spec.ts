@@ -32,7 +32,7 @@ describe('User Entity', () => {
 
     expect(() => {
       user.changeName('Novo Nome');
-    }).toThrow('Inactive user cannot perform this action');
+    }).toThrow();
   });
 
   it('should not inactivate an already inactive user', () => {

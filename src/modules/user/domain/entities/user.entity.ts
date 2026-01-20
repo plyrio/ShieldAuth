@@ -1,5 +1,6 @@
 import { EmailVo } from '../value-objects/email.vo';
 import { UserStatusEnum } from '../enums/user-status.enum';
+import { PasswordHasher } from '../../../../lib/cryptography/password-hasher.interface';
 
 type UserProps = {
   id?: number;
@@ -18,83 +19,84 @@ export class User {
   private password: string;
   private status: UserStatusEnum;
   private createdAt: Date;
-  private updatedAt?: Date;
+  private updatedAt: Date;
 
   constructor(props: UserProps) {
     this.id = props.id;
     this.name = props.name;
     this.email = props.email;
     this.password = props.password;
-    this.status = UserStatusEnum.ACTIVE;
+    this.status = props.status;
     this.createdAt = props.createdAt ?? new Date();
-    this.updatedAt = props.updatedAt ?? this.createdAt;
+    this.updatedAt = props.updatedAt ?? new Date();
   }
 
-  setId(id: number) {
-    if (this.id) {
-      throw new Error('User already has an id');
-    }
-    this.id = id;
+  // --- Getters ---
+  getId() {
+    return this.id!;
   }
-
-  activate() {
-    if (this.status === UserStatusEnum.ACTIVE) {
-      throw new Error('User is already active.');
-    }
-    this.status = UserStatusEnum.ACTIVE;
-    this.updatedAt = new Date();
-  }
-
-  inactivate() {
-    if (this.status === UserStatusEnum.INACTIVE) {
-      throw new Error('User is already inactive.');
-    }
-    this.status = UserStatusEnum.INACTIVE;
-    this.updatedAt = new Date();
-  }
-
-  changePassword(newPassword: string) {
-    if (this.password === newPassword) {
-      throw new Error('New password must be different from current password');
-    }
-
-    this.password = newPassword;
-    this.updatedAt = new Date();
-  }
-
-  changeName(name: string) {
-    if (this.status === UserStatusEnum.INACTIVE) {
-      throw new Error('Inactive user cannot perform this action');
-    }
-    this.name = name;
-    this.updatedAt = new Date();
-  }
-
-  changeEmail(email: EmailVo) {
-    if (this.status === UserStatusEnum.INACTIVE) {
-      throw new Error('Inactive user cannot perform this action');
-    }
-    this.email = email;
-    this.updatedAt = new Date();
-  }
-
   getName() {
     return this.name;
   }
-
+  getEmail() {
+    return this.email;
+  }
+  //getPassword() {
+  //  return this.password;
+  //}
   getStatus() {
     return this.status;
   }
-
-  getId() {
-    return this.id;
+  getCreatedAt() {
+    return this.createdAt;
+  }
+  getUpdatedAt() {
+    return this.updatedAt;
   }
 
-  toPrimitives() {
+  // --- Setters / comportamentos ---
+  changeName(name: string) {
+    if (this.status !== UserStatusEnum.ACTIVE) {
+      throw new Error('Inactive user cannot perform this action');
+    }
+    this.name = name;
+    this.touch();
+  }
+  changeEmail(email: EmailVo) {
+    this.email = email;
+    this.touch();
+  }
+  changePassword(hashedPassword: string) {
+    this.password = hashedPassword;
+    this.touch();
+  }
+  checkPassword(rawPassword: string, hasher: PasswordHasher): Promise<boolean> {
+    return hasher.compare(rawPassword, this.password);
+  }
+  activate() {
+    this.status = UserStatusEnum.ACTIVE;
+    this.touch();
+  }
+  inactivate() {
+    this.status = UserStatusEnum.INACTIVE;
+    this.touch();
+  }
+
+  private touch() {
+    this.updatedAt = new Date();
+  }
+
+  // --- Restore para reconstituir do banco ---
+  static restore(props: UserProps) {
+    return new User(props);
+  }
+
+  // --- Converter para string o email ---
+  toDto() {
     return {
       id: this.id,
       name: this.name,
-      email: this.email,
+      email: this.email.getValue(),
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

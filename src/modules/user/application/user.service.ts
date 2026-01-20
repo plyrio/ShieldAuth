@@ -1,39 +1,51 @@
+import type { IUserRepository } from '../domain/repositories/user.repository.interface';
 import {
-  ConflictException,
   Injectable,
-  InternalServerErrorException,
+  ConflictException,
   NotFoundException,
+  InternalServerErrorException,
+  Inject,
 } from '@nestjs/common';
 import { CreateUserDto } from '../presentation/dto/create-user.dto';
 import { UpdateUserDto } from '../presentation/dto/update-user.dto';
-import { PrismaService } from '../../../prisma.service';
 import {
   ResponseUserDto,
   ResponseUserSchema,
 } from '../presentation/dto/response-user.dto';
+import { EmailVo } from '../domain/value-objects/email.vo';
+import { UserStatusEnum } from '../domain/enums/user-status.enum';
+import { User } from '../domain/entities/user.entity';
+import * as passwordHasherInterface from '../../../lib/cryptography/password-hasher.interface';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject('IUserRepository') private readonly userRepository: IUserRepository,
+
+    @Inject('PasswordHasher')
+    private readonly passwordHasher: passwordHasherInterface.PasswordHasher,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<ResponseUserDto> {
+    const emailVo = new EmailVo(createUserDto.email);
+
     try {
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: createUserDto.email },
+      const existingUser = await this.userRepository.findByEmail(emailVo);
+      if (existingUser) throw new ConflictException('Email already in use');
+
+      const hashedPassword = await this.passwordHasher.hash(
+        createUserDto.password,
+      );
+
+      const user = new User({
+        name: createUserDto.name,
+        email: emailVo,
+        password: hashedPassword,
+        status: UserStatusEnum.ACTIVE,
       });
 
-      if (existingUser) {
-        throw new ConflictException('Email already in use');
-      }
-      const user = await this.prisma.user.create({
-        data: {
-          name: createUserDto.name,
-          email: createUserDto.email,
-          password: createUserDto.password,
-          status: 'ACTIVE',
-        },
-      });
-      return ResponseUserSchema.parse(user);
+      const savedUser = await this.userRepository.create(user);
+      return ResponseUserSchema.parse(savedUser.toDto());
     } catch (error) {
       throw new ConflictException('Email already in use', error);
     }
@@ -41,8 +53,8 @@ export class UserService {
 
   async findAll(): Promise<ResponseUserDto[]> {
     try {
-      const usersData = await this.prisma.user.findMany();
-      return usersData.map((user) => ResponseUserSchema.parse(user));
+      const users = await this.userRepository.findAll();
+      return users.map((user) => ResponseUserSchema.parse(user.toDto()));
     } catch (error) {
       throw new NotFoundException('Users not found.', error);
     }
@@ -50,72 +62,76 @@ export class UserService {
 
   async findOne(id: number): Promise<ResponseUserDto> {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: { id },
-      });
-      return ResponseUserSchema.parse(user);
+      const user = await this.userRepository.findById(id);
+      if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+      return ResponseUserSchema.parse(user.toDto());
     } catch (error) {
-      throw new NotFoundException(`User of id: ${id} not found`, error);
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<ResponseUserDto> {
+    const emailVo = new EmailVo(email);
     try {
-      const user = await this.prisma.user.findUnique({
-        where: { email },
-      });
-      return ResponseUserSchema.parse(user);
+      const user = await this.userRepository.findByEmail(emailVo);
+      if (!user)
+        throw new NotFoundException(`User with email ${email} not found`);
+      return ResponseUserSchema.parse(user.toDto());
     } catch (error) {
-      throw new NotFoundException(`User with email: ${email} not found`, error);
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 
-  async update(
-    id: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<{ message: string; updatedUser: ResponseUserDto }> {
+  async update(id: number, updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.prisma.user.update({
-        where: { id },
-        data: { ...updateUserDto },
-      });
+      const user = await this.userRepository.findById(id);
+      if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+
+      if (updateUserDto.name) user.changeName(updateUserDto.name);
+      if (updateUserDto.email)
+        user.changeEmail(new EmailVo(updateUserDto.email));
+      if (updateUserDto.password) user.changePassword(updateUserDto.password);
+
+      const updatedUser = await this.userRepository.update(user);
       return {
-        message: `User with id: ${id} successfully updated`,
-        updatedUser: ResponseUserSchema.parse(user),
+        message: `User with ID ${id} updated successfully`,
+        updatedUser: ResponseUserSchema.parse(updatedUser.toDto()),
       };
     } catch (error) {
-      throw new InternalServerErrorException(
-        error,
-        `Failed to update user of ID ${id}`,
-      );
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 
-  async remove(
-    id: number,
-  ): Promise<{ message: string; deletedUser: ResponseUserDto }> {
+  async remove(id: number) {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: { id },
-      });
+      const user = await this.userRepository.findById(id);
+      if (!user) throw new NotFoundException(`User with ID ${id} not found`);
 
-      if (!user) {
-        throw new NotFoundException(`User with ID ${id} not found`);
-      }
-
-      await this.prisma.user.delete({
-        where: { id },
-      });
+      await this.userRepository.delete(id);
 
       return {
-        message: `User with ID #${id} successfully deleted`,
-        deletedUser: ResponseUserSchema.parse(user),
+        message: `User with ID ${id} deleted successfully`,
+        deletedUser: ResponseUserSchema.parse(user.toDto()),
       };
     } catch (error) {
-      throw new InternalServerErrorException(
-        error,
-        `Failed to delete user of id: ${id}`,
-      );
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async findByEmailForAuth(email: string): Promise<User | undefined> {
+    const emailVo = new EmailVo(email);
+    try {
+      const user = await this.userRepository.findByEmailForAuth(emailVo);
+      if (!user)
+        throw new NotFoundException(`User with email ${email} not found`);
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(error);
     }
   }
 }

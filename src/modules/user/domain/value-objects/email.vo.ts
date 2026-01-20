@@ -17,8 +17,4 @@ export class EmailVo {
   getValue(): string {
     return this.email;
   }
-
-  private equals(other: EmailVo): boolean {
-    return this.email.toLowerCase() === other.email.toLowerCase();
-  }
 }
