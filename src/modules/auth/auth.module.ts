@@ -1,11 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService } from './application/auth.service';
 import { BcryptPasswordHasher } from '../../lib/cryptography/bcrypt-password-hasher';
-import { AuthController } from './auth.controller';
+import { AuthController } from './presentation/auth.controller';
 import { UserModule } from '../user/user.module';
+import { jwtConstants } from './auth.constants';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    UserModule,
+    JwtModule.register({
+      global: true,
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '60s' },
+    }),
+  ],
   providers: [
     AuthService,
     {

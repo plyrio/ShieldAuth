@@ -12,6 +12,7 @@ const userRepositoryMock: jest.Mocked<IUserRepository> = {
   create: jest.fn(),
   findById: jest.fn(),
   findByEmail: jest.fn(),
+  findByEmailForAuth: jest.fn(),
   findAll: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
