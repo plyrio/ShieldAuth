@@ -2,6 +2,7 @@ import type { PasswordHasher } from '../../../lib/cryptography/password-hasher.i
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../../user/application/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { ResponseUserSchema } from '../../user/presentation/dto/response-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,9 @@ export class AuthService {
 
     const access_token = await this.jwtService.signAsync(payload);
 
-    return access_token;
+    return {
+      user: ResponseUserSchema.parse(user.toDto()),
+      access_token,
+    };
   }
 }

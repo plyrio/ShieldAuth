@@ -56,13 +56,12 @@ export class User {
 
   // --- Setters / comportamentos ---
   changeName(name: string) {
-    if (this.status !== UserStatusEnum.ACTIVE) {
-      throw new Error('Inactive user cannot perform this action');
-    }
+    this.ensureIsActive();
     this.name = name;
     this.touch();
   }
   changeEmail(email: EmailVo) {
+    this.ensureIsActive();
     this.email = email;
     this.touch();
   }
@@ -74,16 +73,32 @@ export class User {
     return hasher.compare(rawPassword, this.password);
   }
   activate() {
+    if (this.status === UserStatusEnum.ACTIVE) {
+      throw new Error(`User already active, you cannot perform this action`);
+    }
     this.status = UserStatusEnum.ACTIVE;
     this.touch();
   }
   inactivate() {
+    this.ensureIsActive(
+      'User already is inactive, you cannot perform this action',
+    );
     this.status = UserStatusEnum.INACTIVE;
     this.touch();
   }
 
   private touch() {
     this.updatedAt = new Date();
+  }
+
+  private ensureIsActive(errorMEssage?: string) {
+    if (this.status !== UserStatusEnum.ACTIVE) {
+      throw new Error(
+        !errorMEssage
+          ? `Inactive user cannot perform this action`
+          : `${errorMEssage}`,
+      );
+    }
   }
 
   // --- Restore para reconstituir do banco ---
