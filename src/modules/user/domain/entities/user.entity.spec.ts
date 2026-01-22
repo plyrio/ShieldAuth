@@ -1,8 +1,13 @@
 import { User } from './user.entity';
 import { UserStatusEnum } from '../enums/user-status.enum';
 import { EmailVo } from '../value-objects/email.vo';
+import { PasswordHasher } from '../../../../lib/cryptography/password-hasher.interface';
 
 describe('User Entity', () => {
+  const passwordHasherMock: PasswordHasher = {
+    hash: jest.fn(), // não usado nesse teste
+    compare: jest.fn().mockResolvedValue(true),
+  };
   const makeUser = () =>
     new User({
       id: 1,
@@ -12,7 +17,8 @@ describe('User Entity', () => {
       status: UserStatusEnum.ACTIVE,
     });
 
-  it('should create a user entity always active', () => {
+  // Creation / initial state
+  it('should create a user entity as active by default', () => {
     const user = makeUser();
     expect(user).toBeInstanceOf(User);
     expect(user.getName()).toBe('Pedro');
@@ -20,22 +26,42 @@ describe('User Entity', () => {
     expect(user.getStatus()).toBe(UserStatusEnum.ACTIVE);
   });
 
-  it('should inactive an active user', () => {
+  // Status transitions
+  it('should inactivate an active user', () => {
     const user = makeUser();
     user.inactivate();
     expect(user.getStatus()).toBe(UserStatusEnum.INACTIVE);
   });
 
-  it('should not allow inactive user to change name', () => {
+  it('should not inactivate an already inactive user', () => {
+    const user = makeUser();
+    user.inactivate();
+    expect(user.getStatus()).toBe(UserStatusEnum.INACTIVE);
+  });
+
+  it('should activate an inactive user', () => {
+    const user = makeUser();
+    user.inactivate();
+    user.activate();
+    expect(user.getStatus()).toBe(UserStatusEnum.ACTIVE);
+  });
+
+  it('should not activate an already active user', () => {
+    const user = makeUser();
+    expect(() => user.activate()).toThrow();
+  });
+
+  // Modification rules (INACTIVE)
+  it('should not allow an inactive user to change name', () => {
     const user = makeUser();
     user.inactivate();
 
     expect(() => {
-      user.changeName('Novo Nome');
+      user.changeName('New Name');
     }).toThrow();
   });
 
-  it('should not allow inactive user to change email', () => {
+  it('should not allow an inactive user to change email', () => {
     const user = makeUser();
     user.inactivate();
 
@@ -44,54 +70,48 @@ describe('User Entity', () => {
     }).toThrow();
   });
 
-  it('should allow active user to change name', () => {
+  // Allowed modifications (ACTIVE)
+  it('should allow an active user to change name', () => {
     const user = makeUser();
-    user.changeName('Novo Nome');
-
-    expect(user.getName()).toBe('Novo Nome');
+    user.changeName('New Name');
+    expect(user.getName()).toBe('New Name');
   });
-  it('should allow active user to change email', () => {
+
+  it('should allow an active user to change email', () => {
     const user = makeUser();
     user.changeEmail(new EmailVo('pedroh@gmail.com'));
-
     expect(user['email'].getValue()).toBe('pedroh@gmail.com');
   });
 
-  it('should not inactivate an already inactive user', () => {
+  // Derived state changes
+  it('should validate password using password hasher', async () => {
     const user = makeUser();
 
-    user.inactivate();
+    const result = await user.checkPassword('raw-password', passwordHasherMock);
 
-    expect(user.getStatus()).toBe(UserStatusEnum.INACTIVE);
+    expect(result).toBe(true);
+    expect(passwordHasherMock.compare).toHaveBeenCalledWith(
+      'raw-password',
+      'hashed-password',
+    );
   });
 
-  it('should activate an inactive user', () => {
+  it('should update updatedAt after changes', () => {
     const user = makeUser();
+    const oldMs = user.getUpdatedAt().getTime();
 
-    user.inactivate();
-    user.activate();
+    user.changeName('New Name');
 
-    expect(user.getStatus()).toBe(UserStatusEnum.ACTIVE);
+    const newMs = user.getUpdatedAt().getTime();
+
+    expect(newMs).toBeGreaterThanOrEqual(oldMs);
   });
 
-  it('should not activate an already active user', () => {
+  // DTO / data exposure
+  it('should not expose password in the DTO', () => {
     const user = makeUser();
-
-    expect(() => user.activate()).toThrow();
-  });
-
-  it('should update password hash', () => {
-    const user = makeUser();
-
-    user.changePassword('hashed-password');
-
-    // NÃO testa criptografia
-    // Testa estado
-    expect(
-      // acessa via comportamento indireto
-      user.checkPassword('raw-password', {
-        compare: jest.fn().mockResolvedValue(true),
-      } as any),
-    ).resolves.toBe(true);
+    const dto = user.toDto();
+    expect('password' in dto).toBe(false);
+    expect(dto).not.toHaveProperty('password');
   });
 });

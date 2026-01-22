@@ -71,17 +71,19 @@ export class UserService {
     }
   }
 
-  async findByEmail(email: string): Promise<ResponseUserDto> {
+  async findByEmail(email: string): Promise<ResponseUserDto>;
+  async findByEmail(email: string, forAuth: true): Promise<User>;
+  async findByEmail(
+    email: string,
+    forAuth?: true,
+  ): Promise<ResponseUserDto | User> {
     const emailVo = new EmailVo(email);
-    try {
-      const user = await this.userRepository.findByEmail(emailVo);
-      if (!user)
-        throw new NotFoundException(`User with email ${email} not found`);
-      return ResponseUserSchema.parse(user.toDto());
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(error);
-    }
+    const user = await this.userRepository.findByEmail(emailVo);
+    if (!user)
+      throw new NotFoundException(`User with email ${email} not found`);
+
+    if (forAuth) return user;
+    return ResponseUserSchema.parse(user.toDto());
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -116,19 +118,6 @@ export class UserService {
         message: `User with ID ${id} deleted successfully`,
         deletedUser: ResponseUserSchema.parse(user.toDto()),
       };
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(error);
-    }
-  }
-
-  async findByEmailForAuth(email: string): Promise<User | undefined> {
-    const emailVo = new EmailVo(email);
-    try {
-      const user = await this.userRepository.findByEmailForAuth(emailVo);
-      if (!user)
-        throw new NotFoundException(`User with email ${email} not found`);
-      return user;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(error);

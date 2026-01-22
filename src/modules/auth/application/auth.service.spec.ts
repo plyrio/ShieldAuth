@@ -30,7 +30,7 @@ describe('AuthService', () => {
   });
 
   const userServiceMock = {
-    findByEmailForAuth: jest.fn(),
+    findByEmail: jest.fn(),
   };
 
   const passwordHasherMock = {
@@ -50,14 +50,15 @@ describe('AuthService', () => {
       status: UserStatusEnum.ACTIVE,
     });
 
-    userServiceMock.findByEmailForAuth.mockResolvedValue(user);
+    userServiceMock.findByEmail.mockResolvedValue(user);
     passwordHasherMock.compare.mockResolvedValue(true);
     jwtServiceMock.signAsync.mockResolvedValue('fake-jwt');
 
     const result = await service.signIn('pedro@gmail.com', '123456');
 
-    expect(userServiceMock.findByEmailForAuth).toHaveBeenCalledWith(
+    expect(userServiceMock.findByEmail).toHaveBeenCalledWith(
       'pedro@gmail.com',
+      true,
     );
     expect(passwordHasherMock.compare).toHaveBeenCalled();
     expect(jwtServiceMock.signAsync).toHaveBeenCalled();
@@ -76,7 +77,7 @@ describe('AuthService', () => {
   });
 
   it('should throw UnauthorizedException if user not found', async () => {
-    userServiceMock.findByEmailForAuth.mockResolvedValue(undefined);
+    userServiceMock.findByEmail.mockResolvedValue(undefined);
 
     await expect(
       service.signIn('notfound@email.com', '123456'),
@@ -84,7 +85,7 @@ describe('AuthService', () => {
   });
 
   it('should throw UnauthorizedException if user not found', async () => {
-    userServiceMock.findByEmailForAuth.mockResolvedValue(undefined);
+    userServiceMock.findByEmail.mockResolvedValue(undefined);
 
     await expect(
       service.signIn('notfound@email.com', '123456'),
@@ -100,7 +101,7 @@ describe('AuthService', () => {
       status: UserStatusEnum.ACTIVE,
     });
 
-    userServiceMock.findByEmailForAuth.mockResolvedValue(user);
+    userServiceMock.findByEmail.mockResolvedValue(user);
     passwordHasherMock.compare.mockResolvedValue(false);
 
     await expect(
@@ -117,7 +118,7 @@ describe('AuthService', () => {
       status: UserStatusEnum.ACTIVE,
     });
 
-    userServiceMock.findByEmailForAuth.mockResolvedValue(user);
+    userServiceMock.findByEmail.mockResolvedValue(user);
     passwordHasherMock.compare.mockResolvedValue(true);
     jwtServiceMock.signAsync.mockResolvedValue('fake-jwt');
 

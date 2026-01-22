@@ -1,98 +1,145 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ShieldAuth API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+**Version:** 1.0
+**OpenAPI Spec:** 3.0
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+API de autenticação e gerenciamento de usuários com recursos como registro de usuários, login, ativação de contas e autenticação baseada em JWT.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tecnologias
 
-## Project setup
+* Node.js + NestJS
+* TypeScript
+* Prisma ORM
+* JWT para autenticação
+* Jest para testes unitários
+* Zod para validação DTO
 
-```bash
-$ npm install
+---
+
+## Estrutura do Projeto
+
+```
+src/
+ ├─ modules/
+ │   ├─ auth/            # AuthService, AuthController, login, JWT
+ │   └─ user/            # UserService, UserController,Operações CRUD
+ ├─ lib/                 # Utilitários, PasswordHasher, criptografia
+ ├─ prisma.service.ts    # Conexão com o banco
+ └─ main.ts
 ```
 
-## Compile and run the project
+---
+
+## Executando o Projeto
 
 ```bash
-# development
-$ npm run start
+# Clonar o repositório
+git clone https://github.com/plyrio/ShieldAuth.git
+cd ShieldAuth
 
-# watch mode
-$ npm run start:dev
+# Instalar dependências
+npm install
 
-# production mode
-$ npm run start:prod
+# Rodar banco de dados (docker)
+docker-compose up -d
+
+# Iniciar servidor de desenvolvimento
+npm run start:dev
+
+# Rodar testes
+npm run test
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## Rotas
 
-# e2e tests
-$ npm run test:e2e
+### Públicas
 
-# test coverage
-$ npm run test:cov
-```
+| Método | Rota        | Descrição                  |
+| ------ | ----------- | -------------------------- |
+| POST   | /user       | Cria um usuário   (signup) |
+| POST   | /auth/login | Login e obtenção do JWT    |
 
-## Deployment
+### Protegidas (JWT)
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+> Todas as rotas abaixo requerem token válido no header `Authorization: Bearer <token>`
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Método | Rota                | Descrição                |
+| ------ | ------------------- | ------------------------ |
+| GET    | /user               | Lista todos usuários     |
+| GET    | /user/id/{id}       | Obetem usuário por ID    |
+| GET    | /user/email/{email} | Obetem usuário por email |
+| PATCH  | /user/{id}          | Atualiza usuário user    |
+| DELETE | /user/{id}          | Deleta usuárioser        |
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+---
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## DTOs / Schemas
 
-## Resources
+### CreateUserDto
 
-Check out a few resources that may come in handy when working with NestJS:
+| Campo    | Tipo   | Requerido |
+| -------- | ------ | --------- |
+| name     | string | sim       |
+| email    | string | sim       |
+| password | string | sim       |
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### UpdateUserDto
 
-## Support
+| Campo    | Tipo   | Requerido |
+| -------- | ------ | --------- |
+| name     | string | não        |
+| email    | string | não        |
+| password | string | não        |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### SignInDto
 
-## Stay in touch
+| Campo    | Tipo   | Requerido |
+| -------- | ------ | --------- |
+| email    | string | sim       |
+| password | string | sim       |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### ResponseUserDto
 
-## License
+| Campo     | Tipo   |
+| --------- | ------ |
+| id        | number |
+| name      | string |
+| email     | string |
+| status    | string |
+| createdAt | string |
+| updatedAt | string |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## Observações
+
+* Senhas sempre armazenadas de forma hash (bcrypt)
+* DTOs validados com Zod
+* Segue princípios de Clean Architecture / DDD (pragmatico)
+
+---
+
+## Autenticação
+
+* Autenticação baseada em JWT  
+* Header: `Authorization: Bearer <token>`  
+* Token expira em X horas (configurado no `JwtModule`)
+
+---
+
+## Tests
+
+* Testes unitários: `UserService`, `User Entity`, `AuthService`
+* Testes E2E: implementação futura
+
+---
+
+## Autor
+
+**Pedro Henrique Lyrio Gonçalves**  
+- GitHub: [https://github.com/plyrio](https://github.com/plyrio)  
+- LinkedIn: [https://www.linkedin.com/in/plyrio](https://www.linkedin.com/in/plyrio) 

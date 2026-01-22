@@ -3,7 +3,7 @@ import { AuthService } from './application/auth.service';
 import { BcryptPasswordHasher } from '../../lib/cryptography/bcrypt-password-hasher';
 import { AuthController } from './presentation/auth.controller';
 import { UserModule } from '../user/user.module';
-import { jwtConstants } from './auth.constants';
+import { jwtConstants } from './infra/auth.constants';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({

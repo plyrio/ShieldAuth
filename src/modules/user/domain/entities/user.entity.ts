@@ -31,30 +31,25 @@ export class User {
     this.updatedAt = props.updatedAt ?? new Date();
   }
 
-  // --- Getters ---
-  getId() {
+  getId(): number | undefined {
     return this.id!;
   }
-  getName() {
+  getName(): string {
     return this.name;
   }
-  getEmail() {
+  getEmail(): EmailVo {
     return this.email;
   }
-  //getPassword() {
-  //  return this.password;
-  //}
-  getStatus() {
+  getStatus(): UserStatusEnum {
     return this.status;
   }
-  getCreatedAt() {
-    return this.createdAt;
+  getCreatedAt(): Date {
+    return new Date(this.createdAt);
   }
-  getUpdatedAt() {
-    return this.updatedAt;
+  getUpdatedAt(): Date {
+    return new Date(this.updatedAt);
   }
 
-  // --- Setters / comportamentos ---
   changeName(name: string) {
     this.ensureIsActive();
     this.name = name;
@@ -101,12 +96,10 @@ export class User {
     }
   }
 
-  // --- Restore para reconstituir do banco ---
   static restore(props: UserProps) {
     return new User(props);
   }
 
-  // --- Converter para string o email ---
   toDto() {
     return {
       id: this.id,

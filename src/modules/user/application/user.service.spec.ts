@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException } from '@nestjs/common';
-
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IUserRepository } from '../domain/repositories/user.repository.interface';
 import { EmailVo } from '../domain/value-objects/email.vo';
@@ -12,7 +11,6 @@ const userRepositoryMock: jest.Mocked<IUserRepository> = {
   create: jest.fn(),
   findById: jest.fn(),
   findByEmail: jest.fn(),
-  findByEmailForAuth: jest.fn(),
   findAll: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
@@ -50,50 +48,37 @@ describe('UserService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a user when email does not exist', async () => {
-    // arrange
-    userRepositoryMock.findByEmail.mockResolvedValue(null);
-
-    const user = User.restore({
+  const makeUser = () =>
+    User.restore({
       id: 1,
       name: 'Pedro',
       email: new EmailVo('pedro@email.com'),
       password: 'hashed-password',
       status: UserStatusEnum.ACTIVE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
 
-    userRepositoryMock.create.mockResolvedValue(user);
+  it('should create a user when email does not exist', async () => {
+    userRepositoryMock.findByEmail.mockResolvedValue(null);
+    userRepositoryMock.create.mockResolvedValue(makeUser());
+    passwordHasherMock.hash.mockResolvedValue('hashed-password');
 
-    // act
     const result = await service.create({
       name: 'Pedro',
       email: 'pedro@email.com',
       password: '12345678',
     });
 
-    // assert
-    expect(userRepositoryMock.findByEmail).toHaveBeenCalled();
+    expect(userRepositoryMock.findByEmail).toHaveBeenCalledWith(
+      new EmailVo('pedro@email.com'),
+    );
+    expect(passwordHasherMock.hash).toHaveBeenCalled();
     expect(userRepositoryMock.create).toHaveBeenCalled();
     expect(result.email).toBe('pedro@email.com');
   });
 
   it('should throw ConflictException when email already exists', async () => {
-    // arrange
-    const existingUser = User.restore({
-      id: 1,
-      name: 'Pedro',
-      email: new EmailVo('pedro@email.com'),
-      password: 'hashed-password',
-      status: UserStatusEnum.ACTIVE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    userRepositoryMock.findByEmail.mockResolvedValue(makeUser());
 
-    userRepositoryMock.findByEmail.mockResolvedValue(existingUser);
-
-    // act & assert
     await expect(
       service.create({
         name: 'Pedro',
@@ -101,5 +86,22 @@ describe('UserService', () => {
         password: '123456',
       }),
     ).rejects.toBeInstanceOf(ConflictException);
+
+    expect(userRepositoryMock.create).not.toHaveBeenCalled();
+  });
+
+  it('should return a list of users', async () => {
+    userRepositoryMock.findAll.mockResolvedValue([makeUser()]);
+
+    const result = await service.findAll();
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).not.toHaveProperty('password');
+  });
+
+  it('should throw NotFoundException when user does not exist', async () => {
+    userRepositoryMock.findById.mockResolvedValue(null);
+
+    await expect(service.findOne(1)).rejects.toBeInstanceOf(NotFoundException);
   });
 });
