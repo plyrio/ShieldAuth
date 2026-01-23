@@ -70,13 +70,13 @@ npm run test
 
 > Todas as rotas abaixo requerem token válido no header `Authorization: Bearer <token>`
 
-| Método | Rota                | Descrição                |
-| ------ | ------------------- | ------------------------ |
-| GET    | /user               | Lista todos usuários     |
+| Método | Rota                | Descrição               |
+| ------ | ------------------- | ----------------------- |
+| GET    | /user               | Lista todos usuários    |
 | GET    | /user/id/{id}       | Obtêm usuário por ID    |
 | GET    | /user/email/{email} | Obtêm usuário por email |
-| PATCH  | /user/{id}          | Atualiza usuário         |
-| DELETE | /user/{id}          | Deleta usuárioser        |
+| PATCH  | /user/{id}          | Atualiza usuário        |
+| DELETE | /user/{id}          | Deleta usuário          |
 
 ---
 
@@ -94,9 +94,9 @@ npm run test
 
 | Campo    | Tipo   | Requerido |
 | -------- | ------ | --------- |
-| name     | string | não        |
-| email    | string | não        |
-| password | string | não        |
+| name     | string | não       |
+| email    | string | não       |
+| password | string | não       |
 
 ### SignInDto
 
