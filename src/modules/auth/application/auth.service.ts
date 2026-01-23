@@ -3,6 +3,7 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../../user/application/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ResponseUserSchema } from '../../user/presentation/dto/response-user.dto';
+import { CreateUserDto } from '../../user/presentation/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -38,5 +39,12 @@ export class AuthService {
       user: ResponseUserSchema.parse(user.toDto()),
       access_token,
     };
+  }
+
+  // AuthService
+  async signUp(dto: CreateUserDto): Promise<any> {
+    await this.userService.create(dto);
+
+    return this.signIn(dto.email, dto.password);
   }
 }

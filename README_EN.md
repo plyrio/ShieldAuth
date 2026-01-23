@@ -1,4 +1,5 @@
-# ShieldAuth API
+# ShieldAuth API  [Portuguese version](README.md)
+
 
 **Version:** 1.0
 **OpenAPI Spec:** 3.0
@@ -47,7 +48,7 @@ npm install
 docker-compose up -d
 
 # Start development server
-npm run start:dev
+npm run dev
 
 # Run tests
 npm run test
@@ -59,10 +60,10 @@ npm run test
 
 ### Public Routes
 
-| Method | Route       | Description                |
-| ------ | ----------- | -------------------------- |
-| POST   | /user       | Create a new user (signup) |
-| POST   | /auth/login | Login and get JWT token    |
+| Method | Route        | Description                |
+| ------ | ------------ | -------------------------- |
+| POST   | /auth/signUp | Create a new user          |
+| POST   | /auth/signIn | Login and get JWT token    |
 
 ### Protected Routes (JWT)
 

@@ -1,4 +1,4 @@
-# ShieldAuth API
+# ShieldAuth API [English version](README_EN.md)
 
 **Version:** 1.0
 **OpenAPI Spec:** 3.0
@@ -58,10 +58,10 @@ npm run test
 
 ### Públicas
 
-| Método | Rota        | Descrição                  |
-| ------ | ----------- | -------------------------- |
-| POST   | /user       | Cria um usuário   (signup) |
-| POST   | /auth/login | Login e obtenção do JWT    |
+| Método | Rota         | Descrição                  |
+| ------ | ------------ | -------------------------- |
+| POST   | /auth/signUp | Cria um usuário   (signup) |
+| POST   | /auth/signIn | Login e obtenção do JWT    |
 
 ### Protegidas (JWT)
 
@@ -72,7 +72,7 @@ npm run test
 | GET    | /user               | Lista todos usuários     |
 | GET    | /user/id/{id}       | Obetem usuário por ID    |
 | GET    | /user/email/{email} | Obetem usuário por email |
-| PATCH  | /user/{id}          | Atualiza usuário user    |
+| PATCH  | /user/{id}          | Atualiza usuário         |
 | DELETE | /user/{id}          | Deleta usuárioser        |
 
 ---
