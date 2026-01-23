@@ -73,8 +73,8 @@ npm run test
 | Método | Rota                | Descrição                |
 | ------ | ------------------- | ------------------------ |
 | GET    | /user               | Lista todos usuários     |
-| GET    | /user/id/{id}       | Obetem usuário por ID    |
-| GET    | /user/email/{email} | Obetem usuário por email |
+| GET    | /user/id/{id}       | Obtêm usuário por ID    |
+| GET    | /user/email/{email} | Obtêm usuário por email |
 | PATCH  | /user/{id}          | Atualiza usuário         |
 | DELETE | /user/{id}          | Deleta usuárioser        |
 
