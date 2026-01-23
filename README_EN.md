@@ -1,4 +1,7 @@
-# ShieldAuth API  [Portuguese version](README.md)
+# ShieldAuth API
+
+🌐 **Languages:**  
+[🇧🇷 Português](README.md) | 🇺🇸 English
 
 
 **Version:** 1.0

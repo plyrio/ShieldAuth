@@ -1,4 +1,7 @@
-# ShieldAuth API [English version](README_EN.md)
+# ShieldAuth API
+
+🌐 **Languages:**  
+🇧🇷 Português |  [🇺🇸 English](README_EN.md)
 
 **Version:** 1.0
 **OpenAPI Spec:** 3.0
