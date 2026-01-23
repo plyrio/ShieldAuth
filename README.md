@@ -134,6 +134,46 @@ npm run test
 
 ---
 
+## Segurança
+
+Esta API foi desenvolvida com foco em boas práticas de segurança desde a camada de aplicação.
+
+### Medidas implementadas
+
+- **Helmet**
+  - Utilizado para configurar headers HTTP de segurança.
+  - Protege contra ataques comuns como:
+    - XSS (Cross-Site Scripting)
+    - Clickjacking
+    - MIME-type sniffing
+  - Configurado globalmente no bootstrap da aplicação.
+
+- **Hash de Senhas**
+  - Senhas nunca são armazenadas em texto puro.
+  - Utiliza **bcrypt** para hashing seguro antes da persistência.
+
+- **Autenticação JWT**
+  - Autenticação baseada em **JSON Web Tokens**.
+  - Tokens enviados via header `Authorization: Bearer <token>`.
+  - Rotas protegidas utilizam `AuthGuard`.
+
+- **Separação de Responsabilidades**
+  - Lógica de autenticação isolada no módulo `auth`.
+  - Regras de domínio encapsuladas na entidade `User`.
+
+- **Validação de Dados**
+  - DTOs validados com **Zod**, evitando dados inválidos ou maliciosos.
+  - Falhas de validação não chegam à camada de domínio.
+
+### Próximas melhorias planejadas
+
+- Rate limiting (ex: `@nestjs/throttler`)
+- Refresh token
+- Logout com invalidação de token
+- Auditoria de eventos sensíveis (login, troca de senha)
+
+---
+
 ## Tests
 
 * Testes unitários: `UserService`, `User Entity`, `AuthService`
